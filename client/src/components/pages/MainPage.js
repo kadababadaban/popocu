@@ -7,12 +7,12 @@ import RightBlock from '../MainPage/RightBlock';
 
 // Local Settings of your app
 const LOCAL_API_ROOT = 'http://localhost:4000';
-const MAIN_PROD_API_ROOT = 'https://morejust.herokuapp.com';
+const MAIN_PROD_API_ROOT = 'https://popocu.herokuapp.com/';
 
 const selectAPI = origin => {
   if (origin.includes('localhost')) {
     return LOCAL_API_ROOT;
-  } else if (origin === 'https://morejust.store') {
+  } else if (origin === 'https://popocu.herokuapp.com/' || !origin.includes('localhost')) {
     return MAIN_PROD_API_ROOT;
   } else {
     return origin;
