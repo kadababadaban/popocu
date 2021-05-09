@@ -24,8 +24,8 @@ fi
 git fetch upstream
 git reset --hard upstream/heroku-deploy
 
-# take all files from master
-git checkout master .
+# take all files from main
+git checkout main .
 git add .
 # except for the file which makes build dir ignored
 git checkout heroku-deploy client/.gitignore
@@ -45,7 +45,7 @@ git push --set-upstream upstream heroku-deploy
 
 # restore local state
 git reset --hard
-git checkout master
+git checkout main
 
 if $LOCAL_CHANGES
 then
