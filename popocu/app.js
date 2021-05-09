@@ -21,6 +21,12 @@ const MAX_FILE_SIZE_MB = parseInt(process.env['MAX_FILE_SIZE_MB']) || 100;
 
 app.use(cors());
 app.use(express.static(publicPath));
+app.use(function(req, res, next){
+  req.setTimeout(500000, function(){
+      console.log('custom error Request timeout')
+  });
+  next();
+});
 
 // Custom function to handle uploads
 var storage = multer.diskStorage({
@@ -65,6 +71,10 @@ app.post('/stats', async (req, res) => {
 });
 
 app.post('/upload', upload.array('somefiles', FILES_LIMIT), (req, res) => {
+  let tokenHeader = req.header('Custom-Auth')
+  if (!tokenHeader || (tokenHeader.length && tokenHeader != process.env.API_KEY))
+    return res.status(500).json(`token error`)
+
   uploadFiles(req.files)
   .then(links => {
     res.send(links);
@@ -75,7 +85,10 @@ app.post('/upload', upload.array('somefiles', FILES_LIMIT), (req, res) => {
 });
 
 app.post('/file', upload.array('file', FILES_LIMIT), (req, res) => {
-  console.log(req.files);
+  let tokenHeader = req.header('Custom-Auth')
+  if (!tokenHeader || (tokenHeader.length && tokenHeader != process.env.API_KEY))
+    return res.status(500).json(`token error`)
+
   uploadFiles(req.files)
   .then(links => {
     res.send(links[0]);
