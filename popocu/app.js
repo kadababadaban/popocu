@@ -8,7 +8,7 @@ const path = require('path');
 const { mkdir } = require('fs');
 const cors = require('cors');
 
-const { gitState, connectToGitHub, getStats, uploadFiles } = require('./repo');
+const { gitState, connectToGitHub, getStats, uploadFiles, downloadFile } = require('./repo');
 
 const app = express();
 const server = http.createServer(app);
@@ -92,6 +92,21 @@ app.post('/file', upload.array('file', FILES_LIMIT), (req, res) => {
   uploadFiles(req.files)
   .then(links => {
     res.send(links[0]);
+  })
+  .catch(err => {
+    res.status(500).json(err.message);
+  });
+});
+
+app.get('/downloadfile', (req, res) => {
+  let tokenHeader = req.header('Custom-Auth')
+  if (!tokenHeader || (tokenHeader.length && tokenHeader != process.env.API_KEY))
+    return res.status(500).json(`token error`)
+
+  downloadFile(req.query.filename)
+  .then(file => {
+    // res.send(stream);
+    res.download(file)
   })
   .catch(err => {
     res.status(500).json(err.message);

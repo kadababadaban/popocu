@@ -1,44 +1,56 @@
 const { exec } = require('child_process');
+const cryptoEncryptor = require('./crypto')
+const fs = require('fs');
 
 module.exports = (username, blockName, filePath) => new Promise((resolve, reject) => {
-  let isResolved = false
-  // NOW WE CAN LAUNCH BASH SCRIPT TO UPLOAD SINGLE FILE
-  const script = exec(`bash add_file.sh ${username} ${blockName} "${filePath}"`);
+  cryptoEncryptor.ecnryptFile(filePath).then(encryptedFilePath => {
+    let isResolved = false
+    // NOW WE CAN LAUNCH BASH SCRIPT TO UPLOAD SINGLE FILE
+    const script = exec(`bash add_file.sh ${username} ${blockName} "${encryptedFilePath}"`);
 
-  script.stdout.on('data', (data) => {
-    console.log('sh:', data)
+    script.stdout.on('data', (data) => {
+      console.log('sh:', data)
 
-    // resolve with a github link
-    if (data.includes('raw.githubusercontent.com')) {
-      data = data.replace(/\n/g, '');
-      
-      // Check if need to remove garbage before link
-      link = data.substr(data.indexOf('http'));
+      // resolve with a github link
+      if (data.includes('raw.githubusercontent.com')) {
+        data = data.replace(/\n/g, '');
 
-      resolve(link);
-      isResolved = true;
-    };
+        // Check if need to remove garbage before link
+        link = data.substr(data.indexOf('http'));
 
-    if (data.includes('ERROR: Upload failed.')) {
-      // check error type here
-      // reject({ error: 'unknown error' })
+        fs.unlinkSync(encryptedFilePath);
+        resolve(link);
+        isResolved = true;
+      };
 
-      // for now, let's always think the problem is free space
-      // BUT
-      // TODO: check if that's a connection error (e.g. when no internet access)
-      reject({ error: 'no free space' })
-      isResolved = true;
-    }
+      if (data.includes('ERROR: Upload failed.')) {
+        // check error type here
+        // reject({ error: 'unknown error' })
+
+        // for now, let's always think the problem is free space
+        // BUT
+        // TODO: check if that's a connection error (e.g. when no internet access)
+        fs.unlinkSync(encryptedFilePath);
+        reject({ error: 'no free space' })
+        isResolved = true;
+      }
+    });
+
+    script.stderr.on('data', (data) => {
+      console.log('sh err:', data)
+    })
+
+    script.on('exit', (code, signal) => {
+      if (!isResolved) {
+        fs.unlinkSync(encryptedFilePath);
+        reject({ code, signal, error: 'unknown error' })
+      }
+    })
+
+  })
+  .catch( error => {
+    console.log("error ocured", error)
   });
 
-  script.stderr.on('data', (data) => {
-    console.log('sh err:', data)
-  })
-
-  script.on('exit', (code, signal) => {
-    if (!isResolved) {
-      reject({ code, signal, error: 'unknown error' })
-    }
-  })
 
 });

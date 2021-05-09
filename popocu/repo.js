@@ -5,6 +5,7 @@
 const axios = require('axios');
 
 const uploadToGithub = require('./upload')
+const downloadFromGithub = require('./download')
 
 const token = process.env['GITHUB_TOKEN'];
 const maxBlockSizeMB = parseInt(process.env['BLOCK_SIZE_MB']) || 1000;
@@ -231,6 +232,11 @@ async function upload(filePath) {
   }
 }
 
+function downloadFile(fileUrlPath) {
+  console.log('[download]:', 'downloading', fileUrlPath)
+  return downloadFromGithub(fileUrlPath)
+}
+
 function uploadFiles(files) {
   return files.reduce(
     (load, file) => load.then(async (urls) => {
@@ -255,5 +261,6 @@ module.exports = {
   gitState,
   connectToGitHub,
   getStats,
-  uploadFiles
+  uploadFiles,
+  downloadFile
 };

@@ -23,7 +23,8 @@
     "express-fileupload": "^1.0.0",
     "json-stringify-safe": "^5.0.1",
     "multer": "^1.4.1",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "tmp": "^0.2.1"
   },
   "engines": {
     "node": "16.0.0"
