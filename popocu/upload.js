@@ -18,7 +18,6 @@ module.exports = (username, blockName, filePath) => new Promise((resolve, reject
         // Check if need to remove garbage before link
         link = data.substr(data.indexOf('http'));
 
-        fs.unlinkSync(encryptedFilePath);
         resolve(link);
         isResolved = true;
       };
@@ -30,7 +29,6 @@ module.exports = (username, blockName, filePath) => new Promise((resolve, reject
         // for now, let's always think the problem is free space
         // BUT
         // TODO: check if that's a connection error (e.g. when no internet access)
-        fs.unlinkSync(encryptedFilePath);
         reject({ error: 'no free space' })
         isResolved = true;
       }
@@ -42,7 +40,6 @@ module.exports = (username, blockName, filePath) => new Promise((resolve, reject
 
     script.on('exit', (code, signal) => {
       if (!isResolved) {
-        fs.unlinkSync(encryptedFilePath);
         reject({ code, signal, error: 'unknown error' })
       }
     })

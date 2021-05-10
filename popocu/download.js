@@ -5,9 +5,18 @@ const fs = require('fs');
 const tmp = require('tmp');
 var request = require('request');
 
+const download = (uri, filename, callback) => {
+  request.head(uri, (err, res, body) => {
+      console.log('content-type:', res.headers['content-type']);
+      console.log('content-length:', res.headers['content-length']);
+
+      request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+  });
+};
+
 module.exports = (fileUrlPath) => new Promise((resolve, reject) => {
 
-  // const tmpobj = tmp.fileSync();
+  const tmpobj = tmp.fileSync();
   // const w = fs.createWriteStream(tmpobj.name);
   // const request = http.get(fileUrlPath, function(response) {
   //   // if (response.statusCode == 200)
@@ -18,14 +27,14 @@ module.exports = (fileUrlPath) => new Promise((resolve, reject) => {
 
 
   // });
-  
-  cryptoEncryptor.decryptFile({fileStream: request(fileUrlPath)}).then(decryptedFileName => {
-    // fs.unlinkSync(tmpobj.name);
-    resolve(decryptedFileName)
-  })
-  .catch( error => {
-    // fs.unlinkSync(tmpobj.name);
-    console.log("error ocured", error)
+
+  download(fileUrlPath, tmpobj.name, () => {    
+    cryptoEncryptor.decryptFile({fileBuffer: require('fs').readFileSync(tmpobj.name)}).then(decryptedFileName => {
+      resolve(decryptedFileName)
+    })
+    .catch( error => {
+      console.log("error ocured", error)
+    });
   });
 
 

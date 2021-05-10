@@ -81,6 +81,7 @@ const ecnryptFile = (filePath) => {
         })
         w.on('close', function () {
             resolve(tmpobj.name)
+            // resolve(fs.readFileSync(tmpobj.name))
         })
   })
   
@@ -89,13 +90,25 @@ const ecnryptFile = (filePath) => {
   return 
 }
 
-const decryptFile = ({filePath = null, fileStream = null}) => {
+const decryptFile = ({filePath = null, fileBuffer = null}) => {
 
     return new Promise((resolve, reject) => {
         // input file
         let r = null;
         if (filePath != null) r= fs.createReadStream(filePath)
-        else r = fileStream;
+        else {
+            const {Duplex} = require('stream'); // Native Node Module 
+
+            function bufferToStream(myBuuffer) {
+                let tmp = new Duplex();
+                tmp.push(myBuuffer);
+                tmp.push(null);
+                return tmp;
+            }
+
+            const myReadableStream = bufferToStream(fileBuffer);
+            r = myReadableStream;
+        }
       
         // decrypt content
         const decrypt = crypto.createDecipheriv(algorithm, secretKey, iv);
@@ -126,6 +139,7 @@ const decryptFile = ({filePath = null, fileStream = null}) => {
         w.on('close', function () {
             if (filePath != null ) resolve(filePath)
             else resolve(tmpobj.name)
+            // else resolve(fs.readFileSync(tmpobj.name))
         })
     })
 }
