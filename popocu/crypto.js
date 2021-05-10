@@ -49,12 +49,15 @@ const decryptBuffer = (hash) => {
 };
 
 const fs = require('fs');
+var zlib = require('zlib');
 const ecnryptFile = (filePath) => {
 
     
     return new Promise((resolve, reject) => {
         // input file
         const r = fs.createReadStream(filePath);
+
+        var zip = zlib.createGzip();
       
         // encrypt content
         const encrypt = crypto.createCipheriv(algorithm, secretKey, iv);
@@ -65,10 +68,14 @@ const ecnryptFile = (filePath) => {
         const w = fs.createWriteStream(tmpobj.name);
 
         // start pipe
-        r.pipe(encrypt).pipe(w);
+        r.pipe(zip).pipe(encrypt).pipe(w);
         
         r.on('error', function (error) {
             console.log("read error")
+            reject(error.message)
+        })
+        zip.on('error', function (error) {
+            console.log("zip error")
             reject(error.message)
         })
         encrypt.on('error', function (error) {
@@ -95,6 +102,7 @@ const decryptFile = ({filePath = null, fileBuffer = null}) => {
     return new Promise((resolve, reject) => {
         // input file
         let r = null;
+        var unzip = zlib.createGunzip();
         if (filePath != null) r= fs.createReadStream(filePath)
         else {
             const {Duplex} = require('stream'); // Native Node Module 
@@ -122,7 +130,7 @@ const decryptFile = ({filePath = null, fileBuffer = null}) => {
         
 
         // start pipe
-        r.pipe(decrypt).pipe(w);
+        r.pipe(decrypt).pipe(unzip).pipe(w);
         
         r.on('error', function (error) {
             console.log("read error")
@@ -130,6 +138,10 @@ const decryptFile = ({filePath = null, fileBuffer = null}) => {
         })
         decrypt.on('error', function (error) {
             console.log("decrypt error")
+            reject(error.message)
+        })
+        unzip.on('error', function (error) {
+            console.log("unzip error")
             reject(error.message)
         })
         w.on('error', function (error) {

@@ -110,8 +110,8 @@ app.get('/downloadfile', (req, res) => {
   downloadFile(req.query.filename)
   .then(file => {
     // res.send(stream);
-    // res.download(file)
-    fix res downlaod with buffer send
+    res.download(file)
+    // res.send(fs.readFileSync(file));
     cleanTMP(res)
     // var file = __dirname + '/upload-folder/dramaticpenguin.MOV';
 
@@ -135,7 +135,7 @@ app.get('/downloadfile', (req, res) => {
   });
 });
 
-app.post('/encrypttest', upload.any('file'), (req, res) => {
+app.post('/encrypttest', upload.single('file'), (req, res) => {
   let tokenHeader = req.header('Custom-Auth')
   if (!tokenHeader || (tokenHeader.length && tokenHeader != process.env.API_KEY))
     return res.status(500).json(`token error`)
