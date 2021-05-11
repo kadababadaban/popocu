@@ -111,6 +111,9 @@ app.get('/downloadfile', (req, res) => {
   .then(file => {
     // res.send(stream);
     res.download(file)
+    // res.setHeader('content-type', 'text/plain');
+    // res.send(JSON.stringify({...}));
+    // res.send(file);
     // res.send(fs.readFileSync(file));
     cleanTMP(res)
     // var file = __dirname + '/upload-folder/dramaticpenguin.MOV';
@@ -135,20 +138,24 @@ app.get('/downloadfile', (req, res) => {
   });
 });
 
-app.post('/encrypttest', upload.single('file'), (req, res) => {
+app.post('/encrypttest', upload.array('file', FILES_LIMIT), (req, res) => {
   let tokenHeader = req.header('Custom-Auth')
   if (!tokenHeader || (tokenHeader.length && tokenHeader != process.env.API_KEY))
     return res.status(500).json(`token error`)
 
     const cryptoEncryptor = require('./crypto')
-    cryptoEncryptor.ecnryptFile(req.files[0].path)
-    .then(tmpFileEncrypted => cryptoEncryptor.decryptFile({fileBuffer: fs.readFileSync(tmpFileEncrypted)}))
+    // cryptoEncryptor.ecnryptFile(req.files[0].path)
+    // .then(tmpFileEncrypted => cryptoEncryptor.decryptFile({fileBuffer: fs.readFileSync(tmpFileEncrypted)}))
+    cryptoEncryptor.decryptFile({filePath:req.files[0].path,fileBuffer: fs.readFileSync(req.files[0].path)})
+    // .then(tmpFileEncrypted => {fs.writeFileSync("./testtemp", fs.readFileSync(tmpFileEncrypted)); return cryptoEncryptor.decryptFile({fileBuffer: fs.readFileSync(tmpFileEncrypted)})})
   .then(links => {
-    res.send(links + fs.readFileSync(links));
+    res.send(fs.readFileSync(links));
     // res.send(links);
+    // cleanTMP(res)
   })
   .catch(err => {
     res.status(500).json(err.message);
+    cleanTMP(res)
   });
 });
 

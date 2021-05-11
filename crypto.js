@@ -54,42 +54,53 @@ const ecnryptFile = (filePath) => {
 
     
     return new Promise((resolve, reject) => {
-        // input file
-        const r = fs.createReadStream(filePath);
-
-        var zip = zlib.createGzip();
-      
-        // encrypt content
-        const encrypt = crypto.createCipheriv(algorithm, secretKey, iv);
-
         const tmpobj = tmp.fileSync();
-      
-        // write file
-        const w = fs.createWriteStream(tmpobj.name);
-
-        // start pipe
-        r.pipe(zip).pipe(encrypt).pipe(w);
+        const hash = crypto.createHash('sha256').update(secretKey).digest('hex');
+        // encrypto data
+        let cipher = crypto.createCipheriv('aes-256-ecb', hash.substring(0, 32), '');
         
-        r.on('error', function (error) {
-            console.log("read error")
-            reject(error.message)
-        })
-        zip.on('error', function (error) {
-            console.log("zip error")
-            reject(error.message)
-        })
-        encrypt.on('error', function (error) {
-            console.log("encrypt error")
-            reject(error.message)
-        })
-        w.on('error', function (error) {
-            console.log("write error")
-            reject(error.message)
-        })
-        w.on('close', function () {
-            resolve(tmpobj.name)
-            // resolve(fs.readFileSync(tmpobj.name))
-        })
+        let fileData = fs.readFileSync(filePath).toString()
+        let encryptedData = cipher.update(fileData, 'utf8', 'base64') + cipher.final('base64');
+        fs.writeFileSync(tmpobj.name, encryptedData)
+        resolve(tmpobj.name)
+        return
+        // // input file
+        // const r = fs.createReadStream(filePath);
+
+        // var zip = zlib.createGzip();
+      
+        // // encrypt content
+        // const encrypt = crypto.createCipheriv(algorithm, secretKey, iv);
+
+      
+        // // write file
+        // const w = fs.createWriteStream(tmpobj.name);
+
+        // // start pipe
+        // r
+        // // .pipe(zip)
+        // .pipe(encrypt).pipe(w);
+        
+        // r.on('error', function (error) {
+        //     console.log("read error")
+        //     reject(error.message)
+        // })
+        // zip.on('error', function (error) {
+        //     console.log("zip error")
+        //     reject(error.message)
+        // })
+        // encrypt.on('error', function (error) {
+        //     console.log("encrypt error")
+        //     reject(error.message)
+        // })
+        // w.on('error', function (error) {
+        //     console.log("write error")
+        //     reject(error.message)
+        // })
+        // w.on('close', function () {
+        //     resolve(tmpobj.name)
+        //     // resolve(fs.readFileSync(tmpobj.name))
+        // })
   })
   
 
@@ -100,59 +111,85 @@ const ecnryptFile = (filePath) => {
 const decryptFile = ({filePath = null, fileBuffer = null}) => {
 
     return new Promise((resolve, reject) => {
-        // input file
-        let r = null;
-        var unzip = zlib.createGunzip();
-        if (filePath != null) r= fs.createReadStream(filePath)
-        else {
-            const {Duplex} = require('stream'); // Native Node Module 
-
-            function bufferToStream(myBuuffer) {
-                let tmp = new Duplex();
-                tmp.push(myBuuffer);
-                tmp.push(null);
-                return tmp;
-            }
-
-            const myReadableStream = bufferToStream(fileBuffer);
-            r = myReadableStream;
-        }
-      
-        // decrypt content
-        const decrypt = crypto.createDecipheriv(algorithm, secretKey, iv);
-
         const tmpobj = tmp.fileSync();
+        const hash = crypto.createHash('sha256').update(secretKey).digest('hex');
+        // decrypto data
+        let decipher = crypto.createDecipheriv('aes-256-ecb', hash.substring(0, 32), '');
+        // the decrypto key point
+        decipher.setAutoPadding(false);
+        fileD = fs.readFileSync(filePath).toString()
+        fs.writeFileSync(tmpobj.name, decipher.update(fs.readFileSync(filePath).toString(), 'base64').toString('utf8'))
+        resolve(tmpobj.name)
+        return
+        // // input file
+        // let r = null;
+        // var unzip = zlib.createGunzip();
+        // if (filePath != null) r= fs.createReadStream(filePath)
+        // else {
+        //     const {Duplex} = require('stream'); // Native Node Module 
+
+        //     function bufferToStream(myBuuffer) {
+        //         let tmp = new Duplex();
+        //         tmp.push(myBuuffer);
+        //         tmp.push(null);
+        //         return tmp;
+        //     }
+
+        //     const myReadableStream = bufferToStream(fileBuffer);
+        //     r = myReadableStream;
+
+        //     // const { Readable } = require('stream');
+        //     // function bufferToStream(binary) {
+
+        //     //     const readableInstanceStream = new Readable({
+        //     //       read() {
+        //     //         this.push(binary);
+        //     //         this.push(null);
+        //     //       }
+        //     //     });
+            
+        //     //     return readableInstanceStream;
+        //     // }
+        //     // // const r = Readable.from(fileBuffer.toString());
+        //     // r = bufferToStream(fileBuffer)
+        // }
       
-        // write file
-        let w = null
-        if (filePath != null) w = fs.createWriteStream(filePath);
-        else  w = fs.createWriteStream(tmpobj.name);
+        // // decrypt content
+        // const decrypt = crypto.createDecipheriv(algorithm, secretKey, iv);
+
+      
+        // // write file
+        // let w = null
+        // if (filePath != null) w = fs.createWriteStream(tmpobj.name);
+        // else  w = fs.createWriteStream(tmpobj.name);
         
 
-        // start pipe
-        r.pipe(decrypt).pipe(unzip).pipe(w);
+        // // start pipe
+        // r.pipe(decrypt)
+        // // .pipe(unzip)
+        // .pipe(w);
         
-        r.on('error', function (error) {
-            console.log("read error")
-            reject(error.message)
-        })
-        decrypt.on('error', function (error) {
-            console.log("decrypt error")
-            reject(error.message)
-        })
-        unzip.on('error', function (error) {
-            console.log("unzip error")
-            reject(error.message)
-        })
-        w.on('error', function (error) {
-            console.log("write error")
-            reject(error.message)
-        })
-        w.on('close', function () {
-            if (filePath != null ) resolve(filePath)
-            else resolve(tmpobj.name)
-            // else resolve(fs.readFileSync(tmpobj.name))
-        })
+        // r.on('error', function (error) {
+        //     console.log("read error")
+        //     reject(error.message)
+        // })
+        // decrypt.on('error', function (error) {
+        //     console.log("decrypt error")
+        //     reject(error.message)
+        // })
+        // unzip.on('error', function (error) {
+        //     console.log("unzip error")
+        //     reject(error.message)
+        // })
+        // w.on('error', function (error) {
+        //     console.log("write error")
+        //     reject(error.message)
+        // })
+        // w.on('close', function () {
+        //     if (filePath != null ) resolve(tmpobj.name)
+        //     else resolve(tmpobj.name)
+        //     // else resolve(fs.readFileSync(tmpobj.name))
+        // })
     })
 }
 

@@ -29,7 +29,7 @@ module.exports = (fileUrlPath) => new Promise((resolve, reject) => {
   // });
 
   download(fileUrlPath, tmpobj.name, () => {    
-    cryptoEncryptor.decryptFile({fileBuffer: require('fs').readFileSync(tmpobj.name)}).then(decryptedFileName => {
+    cryptoEncryptor.decryptFile({filePath: tmpobj.name, fileBuffer: require('fs').readFileSync(tmpobj.name)}).then(decryptedFileName => {
       resolve(decryptedFileName)
     })
     .catch( error => {
