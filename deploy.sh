@@ -15,17 +15,17 @@ git checkout heroku-deploy
 if [ -z $CI ]
 then
 	echo local
-	git remote add upstream git@github.com:morejust/store.git
+	git remote add upstream git@github.com:kadababadaban/popocu.git
 else
 	echo ci
-	git remote add upstream "https://$GITHUB_TOKEN@github.com/morejust/store.git"
+	git remote add upstream "https://$GITHUB_TOKEN@github.com/kadababadaban/popocu.git"
 fi
 
 git fetch upstream
 git reset --hard upstream/heroku-deploy
 
-# take all files from main
-git checkout main .
+# take all files from master
+git checkout master .
 git add .
 # except for the file which makes build dir ignored
 git checkout heroku-deploy client/.gitignore
@@ -45,7 +45,7 @@ git push --set-upstream upstream heroku-deploy
 
 # restore local state
 git reset --hard
-git checkout main
+git checkout master
 
 if $LOCAL_CHANGES
 then
