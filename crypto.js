@@ -58,9 +58,10 @@ const ecnryptFile = (filePath) => {
         const hash = crypto.createHash('sha256').update(secretKey).digest('hex');
         // encrypto data
         let cipher = crypto.createCipheriv('aes-256-ecb', hash.substring(0, 32), '');
+        // cipher.setAutoPadding(false)
         
-        let fileData = fs.readFileSync(filePath).toString()
-        let encryptedData = cipher.update(fileData, 'utf8', 'base64') + cipher.final('base64');
+        let fileData = fs.readFileSync(filePath)
+        let encryptedData = Buffer.concat([cipher.update(fileData), cipher.final()]);
         fs.writeFileSync(tmpobj.name, encryptedData)
         resolve(tmpobj.name)
         return
@@ -116,9 +117,9 @@ const decryptFile = ({filePath = null, fileBuffer = null}) => {
         // decrypto data
         let decipher = crypto.createDecipheriv('aes-256-ecb', hash.substring(0, 32), '');
         // the decrypto key point
-        decipher.setAutoPadding(false);
+        // decipher.setAutoPadding(false);
         fileD = fs.readFileSync(filePath).toString()
-        fs.writeFileSync(tmpobj.name, decipher.update(fs.readFileSync(filePath).toString(), 'base64').toString('utf8'))
+        fs.writeFileSync(tmpobj.name, Buffer.concat([decipher.update(fs.readFileSync(filePath)), decipher.final()]))
         resolve(tmpobj.name)
         return
         // // input file
