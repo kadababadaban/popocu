@@ -29,6 +29,8 @@ if (process.env['GITHUB_ORGANIZATION']) {
   API_URL = "https://api.github.com/user";
 }
 
+let items_perpage = 1000
+
 
 // Run once at server initialization
 function connectToGitHub() {
@@ -94,7 +96,7 @@ function createBlock(blockNum) {
 
   return new Promise((resolve, reject) => {
     let headers = {'Authorization': `token ${token}`}
-    axios.post(`${API_URL}/repos`, DATA, { headers: headers })
+    axios.post(`${API_URL}/repos?per_page=${items_perpage}&page=1`, DATA, { headers: headers })
     .then(response => {
       console.log('✅ Block was created');
 
@@ -175,8 +177,10 @@ function getAllBlocks() {
     let blocks = {};
 
     let headers = {'Authorization': `token ${token}`}
-    axios.get(`${API_URL}/repos`, { headers: headers })
+    axios.get(`${API_URL}/repos?per_page=${items_perpage}&page=1`, { headers: headers })
     .then(gitResponse => {
+
+      gitResponse.data = gitResponse.data.sort(function (a, b) { return (a["description"] && b["description"] && parseInt(a["description"].replace(/\D/g, '')) > parseInt(b["description"].replace(/\D/g, ''))) ? 1 : -1; });
 
       // Going through each repo
       gitResponse.data.forEach(repo => {
