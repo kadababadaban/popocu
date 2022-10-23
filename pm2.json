@@ -1,0 +1,14 @@
+{
+    "apps": [
+        {
+            "name": "moreJustStore",
+            "script": "/bin/bash",
+            "args":  ["-c", "source .env && nodemon app.js"]
+        },
+        {
+            "name": "boreTunnel",
+            "script": "/bin/bash",
+            "args":  ["-c", "bore local 4000 --to bore.pub -p 35008"]
+        }
+    ]
+}
