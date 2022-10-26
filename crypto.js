@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const algorithm = 'aes-256-ctr';
-const tempSecretKey = process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN : "vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3";
+const tempSecretKey = process.env.GITHUB_TOKEN_OLD ? process.env.GITHUB_TOKEN_OLD : "vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3";
 const secretKey = crypto.createHash('sha256').update(String(tempSecretKey)).digest('base64').substr(0, 32);
 const iv = crypto.randomBytes(16);
 const tmp = require('tmp');
